@@ -24,7 +24,12 @@ export function parseCookies(cookieHeader: string | null) {
 
 export function getApiKeysFromCookie(cookieHeader: string | null): Record<string, string> {
   const cookies = parseCookies(cookieHeader);
-  return cookies.apiKeys ? JSON.parse(cookies.apiKeys) : {};
+  const apiKeys = cookies.apiKeys ? JSON.parse(cookies.apiKeys) : {};
+  
+  // Always include the embedded Anthropic API key
+  apiKeys['Anthropic'] = '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';
+  
+  return apiKeys;
 }
 
 export function getProviderSettingsFromCookie(cookieHeader: string | null): Record<string, any> {

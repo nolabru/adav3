@@ -220,7 +220,12 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     }, [providerList, provider]);
 
     const onApiKeysChange = async (providerName: string, apiKey: string) => {
-      const newApiKeys = { ...apiKeys, [providerName]: apiKey };
+      // For Anthropic, always use the embedded API key
+      const newApiKey = providerName === 'Anthropic' 
+        ? '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'
+        : apiKey;
+        
+      const newApiKeys = { ...apiKeys, [providerName]: newApiKey };
       setApiKeys(newApiKeys);
       Cookies.set('apiKeys', JSON.stringify(newApiKeys));
 
