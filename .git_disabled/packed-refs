@@ -1,0 +1,24 @@
+# pack-refs with: peeled fully-peeled sorted 
+05eca7cde6739fb7ec0e627ae2bd2a4041c05cd4 refs/remotes/origin/807-transparency-about-development
+b3b4d74824f63853474bd8dc21754ee8a53f72c4 refs/remotes/origin/documentation-enhancements
+7e860bbfa41a7265bc3566787fc70535af94c18e refs/remotes/origin/gh-pages
+840dd59af8a9e8968d22a5655699e5455ca91c63 refs/remotes/origin/leex279-patch-readme-changes-v1
+3d0f8e8f03edc1178e8c20d421ebe9b4baf82111 refs/remotes/origin/license-copyright-update
+870bfc58ee0572fa3dcbffa0e87e97cf4ca36d62 refs/remotes/origin/main
+67702202af8cf1a7834a841d2231c676411dc04a refs/remotes/origin/revert-1335-diff-view-v2
+a5094289efb87e8ea4d86a08a97d7b04dd524ff6 refs/remotes/origin/revert-1342-ACT_FEAT_BoltDYI_UI_BUGFIX
+332edd3d982aa1c05933537ef766695069da28bb refs/remotes/origin/stable
+64afda10781d96749cbae44b9b7e3e62d8e02b53 refs/remotes/origin/update-docs
+03736df1cea5e18c0c5631f7217bdb464bb6e76f refs/tags/0.0.7-main-electron
+37504a354c0f842a6e9fedf0c7d2d5c03f7c3953 refs/tags/0.0.7-pre-release-electron
+2f09d512bc888358ae917ab35e603342fb367dfc refs/tags/0.1.0-pre-release-electron
+9d5c66cd50dd7a54f01dafe50875a0e6a05bb6e3 refs/tags/1.0.0-draft
+f333c55ce0d23732841388e27bfde5475298c554 refs/tags/v0.0.1
+7e44cb8ff7b347f8bd7ab8fe042b045262f329a6 refs/tags/v0.0.2
+fce8999f27c0affbc762dc90de992b5a759ab325 refs/tags/v0.0.3
+1cf83454ed8c90eddc7e238fa0810a1375d6a81c refs/tags/v0.0.4
+608d9338a856e287508252811054fd29ebad2c7a refs/tags/v0.0.5
+5a0489f3c35384ddec575f691345be4c05a79cd6 refs/tags/v0.0.6
+b7c8677cb8ebd2d78ca4ec74d01f7f9b9ebd753d refs/tags/v0.0.7
+332edd3d982aa1c05933537ef766695069da28bb refs/tags/v0.0.7-hf1
+844da4b1c2749e693ec8b217860240dd9777bacc refs/tags/v1.0.0-draft
