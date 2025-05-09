@@ -146,9 +146,7 @@ export const ChatImpl = memo(
 
     const [animationScope, animate] = useAnimate();
 
-    const [apiKeys, setApiKeys] = useState<Record<string, string>>({
-      'Anthropic': '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'
-    });
+    const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
 
     const {
       messages,
@@ -516,8 +514,6 @@ export const ChatImpl = memo(
 
       if (storedApiKeys) {
         const parsedKeys = JSON.parse(storedApiKeys);
-        // Always ensure Anthropic key is set
-        parsedKeys['Anthropic'] = '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';
         setApiKeys(parsedKeys);
       }
     }, []);

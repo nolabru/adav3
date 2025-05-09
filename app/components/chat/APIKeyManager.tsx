@@ -3,9 +3,6 @@ import { IconButton } from '~/components/ui/IconButton';
 import type { ProviderInfo } from '~/types/model';
 import Cookies from 'js-cookie';
 
-// Embedded Anthropic API key
-const EMBEDDED_ANTHROPIC_API_KEY = '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';
-
 interface APIKeyManagerProps {
   provider: ProviderInfo;
   apiKey: string;
@@ -30,9 +27,6 @@ export function getApiKeysFromCookies() {
       parsedKeys = apiKeyMemoizeCache[storedApiKeys] = JSON.parse(storedApiKeys);
     }
   }
-
-  // Always include the embedded Anthropic API key
-  parsedKeys['Anthropic'] = EMBEDDED_ANTHROPIC_API_KEY;
 
   return parsedKeys;
 }
@@ -85,11 +79,7 @@ export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, 
 
     // Save to cookies
     const currentKeys = getApiKeysFromCookies();
-    // Don't override the Anthropic key
-    const newKeys = { 
-      ...currentKeys, 
-      [provider.name]: provider.name === 'Anthropic' ? EMBEDDED_ANTHROPIC_API_KEY : tempKey 
-    };
+    const newKeys = { ...currentKeys, [provider.name]: tempKey };
     Cookies.set('apiKeys', JSON.stringify(newKeys));
 
     setIsEditing(false);
@@ -124,7 +114,7 @@ export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, 
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {isEditing && provider.name !== 'Anthropic' ? (
+        {isEditing ? (
           <div className="flex items-center gap-2">
             <input
               type="password"
@@ -152,7 +142,7 @@ export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, 
           </div>
         ) : (
           <>
-            {provider.name !== 'Anthropic' && (
+            {
               <IconButton
                 onClick={() => setIsEditing(true)}
                 title="Edit API Key"
@@ -160,8 +150,8 @@ export const APIKeyManager: React.FC<APIKeyManagerProps> = ({ provider, apiKey, 
               >
                 <div className="i-ph:pencil-simple w-4 h-4" />
               </IconButton>
-            )}
-            {provider?.getApiKeyLink && !apiKey && provider.name !== 'Anthropic' && (
+            }
+            {provider?.getApiKeyLink && !apiKey && (
               <IconButton
                 onClick={() => window.open(provider?.getApiKeyLink)}
                 title="Get API Key"
