@@ -54,4 +54,11 @@ export default [
       ],
     },
   },
+  // Disable consistent-return rule for specific files
+  {
+    files: ['app/components/ui/SequentialGooeyText.tsx', 'app/components/ui/Typewriter.tsx'],
+    rules: {
+      'consistent-return': 'off',
+    },
+  },
 ];

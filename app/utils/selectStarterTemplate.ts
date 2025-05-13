@@ -88,20 +88,20 @@ export const selectStarterTemplate = async (options: { message: string; model: s
     provider,
     system: starterTemplateSelectionPrompt(templates),
   };
-  
+
   try {
     const response = await fetch('/api/llmcall', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const respJson: { text: string } = await response.json();
     console.log(respJson);
 
@@ -113,10 +113,12 @@ export const selectStarterTemplate = async (options: { message: string; model: s
     }
   } catch (error) {
     console.error('Error selecting starter template:', error);
+
     // Continue with blank template on error
   }
-  
+
   console.log('No template selected or error occurred, using blank template');
+
   return {
     template: 'blank',
     title: '',
@@ -128,10 +130,11 @@ const getGitHubRepoContent = async (repoName: string): Promise<{ name: string; p
     // Instead of directly fetching from GitHub, use our own API endpoint as a proxy
     const response = await fetch(`/api/github-template?repo=${encodeURIComponent(repoName)}`, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
+
       // Add a timeout to prevent hanging requests
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
 
     if (!response.ok) {
@@ -144,6 +147,7 @@ const getGitHubRepoContent = async (repoName: string): Promise<{ name: string; p
     return files;
   } catch (error) {
     console.error('Error fetching release contents:', error);
+
     // Return an empty array instead of throwing to prevent the app from crashing
     return [];
   }
@@ -160,7 +164,7 @@ export async function getTemplates(templateName: string, title?: string) {
 
     const githubRepo = template.githubRepo;
     const files = await getGitHubRepoContent(githubRepo);
-    
+
     if (!files || files.length === 0) {
       console.warn(`No files found for template "${templateName}", returning null`);
       return null;
@@ -168,47 +172,47 @@ export async function getTemplates(templateName: string, title?: string) {
 
     let filteredFiles = files;
 
-  /*
-   * ignoring common unwanted files
-   * exclude    .git
-   */
-  filteredFiles = filteredFiles.filter((x) => x.path.startsWith('.git') == false);
-
-  /*
-   * exclude    lock files
-   * WE NOW INCLUDE LOCK FILES FOR IMPROVED INSTALL TIMES
-   */
-  {
     /*
-     *const comminLockFiles = ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
-     *filteredFiles = filteredFiles.filter((x) => comminLockFiles.includes(x.name) == false);
+     * ignoring common unwanted files
+     * exclude    .git
      */
-  }
+    filteredFiles = filteredFiles.filter((x) => x.path.startsWith('.git') == false);
 
-  // exclude    .bolt
-  filteredFiles = filteredFiles.filter((x) => x.path.startsWith('.bolt') == false);
+    /*
+     * exclude    lock files
+     * WE NOW INCLUDE LOCK FILES FOR IMPROVED INSTALL TIMES
+     */
+    {
+      /*
+       *const comminLockFiles = ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
+       *filteredFiles = filteredFiles.filter((x) => comminLockFiles.includes(x.name) == false);
+       */
+    }
 
-  // check for ignore file in .bolt folder
-  const templateIgnoreFile = files.find((x) => x.path.startsWith('.bolt') && x.name == 'ignore');
+    // exclude    .bolt
+    filteredFiles = filteredFiles.filter((x) => x.path.startsWith('.bolt') == false);
 
-  const filesToImport = {
-    files: filteredFiles,
-    ignoreFile: [] as typeof filteredFiles,
-  };
+    // check for ignore file in .bolt folder
+    const templateIgnoreFile = files.find((x) => x.path.startsWith('.bolt') && x.name == 'ignore');
 
-  if (templateIgnoreFile) {
-    // redacting files specified in ignore file
-    const ignorepatterns = templateIgnoreFile.content.split('\n').map((x) => x.trim());
-    const ig = ignore().add(ignorepatterns);
+    const filesToImport = {
+      files: filteredFiles,
+      ignoreFile: [] as typeof filteredFiles,
+    };
 
-    // filteredFiles = filteredFiles.filter(x => !ig.ignores(x.path))
-    const ignoredFiles = filteredFiles.filter((x) => ig.ignores(x.path));
+    if (templateIgnoreFile) {
+      // redacting files specified in ignore file
+      const ignorepatterns = templateIgnoreFile.content.split('\n').map((x) => x.trim());
+      const ig = ignore().add(ignorepatterns);
 
-    filesToImport.files = filteredFiles;
-    filesToImport.ignoreFile = ignoredFiles;
-  }
+      // filteredFiles = filteredFiles.filter(x => !ig.ignores(x.path))
+      const ignoredFiles = filteredFiles.filter((x) => ig.ignores(x.path));
 
-  const assistantMessage = `
+      filesToImport.files = filteredFiles;
+      filesToImport.ignoreFile = ignoredFiles;
+    }
+
+    const assistantMessage = `
 Bolt is initializing your project with the required files using the ${template.name} template.
 <boltArtifact id="imported-files" title="${title || 'Create initial files'}" type="bundled">
 ${filesToImport.files
@@ -221,22 +225,22 @@ ${file.content}
   .join('\n')}
 </boltArtifact>
 `;
-  let userMessage = ``;
-  const templatePromptFile = files.filter((x) => x.path.startsWith('.bolt')).find((x) => x.name == 'prompt');
+    let userMessage = ``;
+    const templatePromptFile = files.filter((x) => x.path.startsWith('.bolt')).find((x) => x.name == 'prompt');
 
-  if (templatePromptFile) {
-    userMessage = `
+    if (templatePromptFile) {
+      userMessage = `
 TEMPLATE INSTRUCTIONS:
 ${templatePromptFile.content}
 
 ---
 `;
-  }
+    }
 
-  if (filesToImport.ignoreFile.length > 0) {
-    userMessage =
-      userMessage +
-      `
+    if (filesToImport.ignoreFile.length > 0) {
+      userMessage =
+        userMessage +
+        `
 STRICT FILE ACCESS RULES - READ CAREFULLY:
 
 The following files are READ-ONLY and must never be modified:
@@ -260,9 +264,9 @@ Any attempt to modify these protected files will result in immediate termination
 If you need to make changes to functionality, create new files instead of modifying the protected ones listed above.
 ---
 `;
-  }
+    }
 
-  userMessage += `
+    userMessage += `
 ---
 template import is done, and you can now use the imported files,
 edit only the files that need to be changed, and you can create new files as needed.
@@ -273,10 +277,10 @@ Now that the Template is imported please continue with my original request
 IMPORTANT: Dont Forget to install the dependencies before running the app by using \`npm install && npm run dev\`
 `;
 
-  return {
-    assistantMessage,
-    userMessage,
-  };
+    return {
+      assistantMessage,
+      userMessage,
+    };
   } catch (error) {
     console.error('Error in getTemplates:', error);
     return null;

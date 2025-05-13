@@ -96,6 +96,20 @@ export class LLMManager {
             !!provider.getDynamicModels,
         )
         .map(async (provider) => {
+          // Skip providers that require API keys if they're not configured
+          const { apiKey } = provider.getProviderBaseUrlAndKey({
+            apiKeys,
+            providerSettings: providerSettings?.[provider.name],
+            serverEnv: serverEnv as any,
+            defaultBaseUrlKey: '',
+            defaultApiTokenKey: provider.config.apiTokenKey || '',
+          });
+
+          // If API key is required but not provided, return empty array without error
+          if (!apiKey && provider.config.apiTokenKey) {
+            return [];
+          }
+
           const cachedModels = provider.getModelsFromCache(options);
 
           if (cachedModels) {
@@ -111,7 +125,11 @@ export class LLMManager {
               return models;
             })
             .catch((err) => {
-              logger.error(`Error getting dynamic models ${provider.name} :`, err);
+              // Don't log errors for missing API keys
+              if (!String(err).includes('Missing Api Key')) {
+                logger.error(`Error getting dynamic models ${provider.name} :`, err);
+              }
+
               return [];
             });
 
@@ -166,6 +184,20 @@ export class LLMManager {
       return [...cachedModels, ...staticModels];
     }
 
+    // Skip providers that require API keys if they're not configured
+    const { apiKey } = provider.getProviderBaseUrlAndKey({
+      apiKeys,
+      providerSettings: providerSettings?.[provider.name],
+      serverEnv: serverEnv as any,
+      defaultBaseUrlKey: '',
+      defaultApiTokenKey: provider.config.apiTokenKey || '',
+    });
+
+    // If API key is required but not provided, return only static models without error
+    if (!apiKey && provider.config.apiTokenKey) {
+      return staticModels;
+    }
+
     logger.info(`Getting dynamic models for ${provider.name}`);
 
     const dynamicModels = await provider
@@ -177,7 +209,11 @@ export class LLMManager {
         return models;
       })
       .catch((err) => {
-        logger.error(`Error getting dynamic models ${provider.name} :`, err);
+        // Don't log errors for missing API keys
+        if (!String(err).includes('Missing Api Key')) {
+          logger.error(`Error getting dynamic models ${provider.name} :`, err);
+        }
+
         return [];
       });
     const dynamicModelsName = dynamicModels.map((d) => d.name);

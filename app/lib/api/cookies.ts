@@ -1,4 +1,4 @@
-  export function parseCookies(cookieHeader: string | null) {
+export function parseCookies(cookieHeader: string | null) {
   const cookies: Record<string, string> = {};
 
   if (!cookieHeader) {
@@ -25,12 +25,12 @@
 export function getApiKeysFromCookie(cookieHeader: string | null): Record<string, string> {
   const cookies = parseCookies(cookieHeader);
   const apiKeys = cookies.apiKeys ? JSON.parse(cookies.apiKeys) : {};
-  
+
   // If Anthropic API key is set in environment variables, use it
   if (process.env.ANTHROPIC_API_KEY) {
-    apiKeys['Anthropic'] = process.env.ANTHROPIC_API_KEY;
+    apiKeys.Anthropic = process.env.ANTHROPIC_API_KEY;
   }
-  
+
   return apiKeys;
 }
 

@@ -1,7 +1,5 @@
-"use client";
-
-import * as React from "react";
-import { classNames } from "~/utils/classNames";
+import * as React from 'react';
+import { classNames } from '~/utils/classNames';
 
 interface SequentialGooeyTextProps {
   texts: string[];
@@ -16,139 +14,120 @@ export function SequentialGooeyText({
   morphTime = 1,
   cooldownTime = 0.25,
   className,
-  textClassName
+  textClassName,
 }: SequentialGooeyTextProps) {
-  const text1Ref = React.useRef<HTMLSpanElement>(null);
-  const text2Ref = React.useRef<HTMLSpanElement>(null);
-  const indexRef = React.useRef<number>(0);
-  const nextIndexRef = React.useRef<number>(1);
+  const [currentText, setCurrentText] = React.useState<string>('');
+  const [nextText, setNextText] = React.useState<string>('');
+  const textIndexRef = React.useRef(0);
+
+  const elts = {
+    text1: React.useRef<HTMLSpanElement>(null),
+    text2: React.useRef<HTMLSpanElement>(null),
+  };
 
   React.useEffect(() => {
-    if (texts.length === 0) return;
-    
-    let time = new Date();
-    let morph = 0;
-    let cooldown = cooldownTime;
-    let animationFrameId: number;
-
-    // Initialize text elements
-    if (text1Ref.current && text2Ref.current) {
-      text1Ref.current.textContent = texts[indexRef.current];
-      text2Ref.current.textContent = texts[nextIndexRef.current];
-      text1Ref.current.style.opacity = "100%";
-      text2Ref.current.style.opacity = "0%";
+    if (texts.length === 0) {
+      return;
     }
 
-    const setMorph = (fraction: number) => {
-      if (text1Ref.current && text2Ref.current) {
-        // Apply the same blur and opacity to both texts
-        text2Ref.current.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-        text2Ref.current.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+    // Initialize with first two texts
+    setCurrentText(texts[0]);
+    setNextText(texts[1 % texts.length]);
 
-        fraction = 1 - fraction;
-        text1Ref.current.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
-        text1Ref.current.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+    let animationFrame: number;
+    let textFraction = 0;
+    let frameCount = 0;
+    let lastTime = 0;
+    let pauseCount = 0;
+    let isPaused = false;
+
+    const animate = (time: number) => {
+      if (lastTime === 0) {
+        lastTime = time;
       }
+
+      // Removed unused delta variable
+
+      if (isPaused) {
+        pauseCount++;
+
+        if (pauseCount >= 60) {
+          // Pause for about 1 second (60 frames)
+          isPaused = false;
+          pauseCount = 0;
+        }
+      } else if (frameCount >= 100) {
+        frameCount = 0;
+        isPaused = true;
+
+        // Update text indices using ref to avoid re-triggering effect
+        textIndexRef.current = (textIndexRef.current + 1) % texts.length;
+
+        const nextIndex = (textIndexRef.current + 1) % texts.length;
+
+        // Update displayed texts
+        setCurrentText(texts[textIndexRef.current]);
+        setNextText(texts[nextIndex]);
+
+        // Reset animation
+        textFraction = 0;
+      } else {
+        frameCount++;
+
+        // Apply morphing effect
+        if (elts.text1.current && elts.text2.current) {
+          if (frameCount < 50) {
+            textFraction = frameCount / 50;
+
+            // Fade out first text
+            elts.text1.current.style.opacity = (1 - textFraction).toString();
+            elts.text1.current.style.filter = `blur(${Math.min(8, 8 * textFraction)}px)`;
+
+            // Fade in second text
+            elts.text2.current.style.opacity = textFraction.toString();
+            elts.text2.current.style.filter = `blur(${Math.min(8, 8 * (1 - textFraction))}px)`;
+          }
+        }
+      }
+
+      lastTime = time;
+      animationFrame = requestAnimationFrame(animate);
     };
 
-    const doCooldown = () => {
-      morph = 0;
-      
-      if (text1Ref.current && text2Ref.current) {
-        // Swap the content
-        text1Ref.current.textContent = text2Ref.current.textContent;
-        
-        // Update indices for strict sequential order
-        indexRef.current = nextIndexRef.current;
-        nextIndexRef.current = (nextIndexRef.current + 1) % texts.length;
-        
-        // Update the next text
-        text2Ref.current.textContent = texts[nextIndexRef.current];
-        
-        // Reset styles
-        text1Ref.current.style.filter = "";
-        text1Ref.current.style.opacity = "100%";
-        text2Ref.current.style.filter = "";
-        text2Ref.current.style.opacity = "0%";
-      }
+    animationFrame = requestAnimationFrame(animate);
+
+    // Cleanup function without a return value
+    return function cleanup() {
+      cancelAnimationFrame(animationFrame);
     };
-
-    const doMorph = () => {
-      morph -= cooldown;
-      cooldown = 0;
-      
-      let fraction = morph / morphTime;
-      if (fraction > 1) {
-        cooldown = cooldownTime;
-        fraction = 1;
-      }
-      
-      setMorph(fraction);
-    };
-
-    function animate() {
-      const newTime = new Date();
-      const dt = (newTime.getTime() - time.getTime()) / 1000;
-      time = newTime;
-
-      cooldown -= dt;
-
-      if (cooldown <= 0) {
-        doMorph();
-      } else if (cooldown <= 0.01) {
-        // Only do cooldown when animation is complete
-        doCooldown();
-      }
-      
-      animationFrameId = requestAnimationFrame(animate);
-    }
-
-    animationFrameId = requestAnimationFrame(animate);
-
-    return () => {
-      // Cleanup function
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [texts, morphTime, cooldownTime]);
+  }, [texts, morphTime, cooldownTime]); // Remove textIndex from dependencies
 
   return (
-    <div className={classNames("relative", className)}>
-      <svg className="absolute h-0 w-0" aria-hidden="true" focusable="false">
-        <defs>
-          <filter id="threshold">
-            <feColorMatrix
-              in="SourceGraphic"
-              type="matrix"
-              values="1 0 0 0 0
-                      0 1 0 0 0
-                      0 0 1 0 0
-                      0 0 0 255 -140"
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      <div
-        className="flex items-center justify-center"
-        style={{ filter: "url(#threshold)" }}
-      >
+    <div className={classNames('relative', className)}>
+      <div className="flex items-center justify-center">
         <span
-          ref={text1Ref}
+          ref={elts.text1}
           className={classNames(
-            "absolute inline-block select-none text-center text-3xl lg:text-6xl",
-            "text-bolt-elements-textPrimary font-bold whitespace-nowrap",
-            textClassName
+            'inline-block select-none text-center text-3xl lg:text-6xl absolute',
+            'text-bolt-elements-textPrimary font-bold whitespace-nowrap',
+            textClassName,
           )}
-        />
+        >
+          {currentText}
+        </span>
         <span
-          ref={text2Ref}
+          ref={elts.text2}
           className={classNames(
-            "absolute inline-block select-none text-center text-3xl lg:text-6xl",
-            "text-bolt-elements-textPrimary font-bold whitespace-nowrap",
-            textClassName
+            'inline-block select-none text-center text-3xl lg:text-6xl absolute opacity-0',
+            'text-bolt-elements-textPrimary font-bold whitespace-nowrap',
+            textClassName,
           )}
-        />
+        >
+          {nextText}
+        </span>
       </div>
     </div>
   );
 }
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiJ9

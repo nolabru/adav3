@@ -1,7 +1,3 @@
-/*
- * @ts-nocheck
- * Preventing TS checks with files presented in the video for a better presentation.
- */
 import { useStore } from '@nanostores/react';
 import type { Message } from 'ai';
 import { useChat } from 'ai/react';
@@ -225,7 +221,7 @@ export const ChatImpl = memo(
               type: 'text',
               text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${prompt}`,
             },
-          ] as any, // Type assertion to bypass compiler check
+          ] as any,
         });
       }
     }, [model, provider, searchParams]);
@@ -290,17 +286,17 @@ export const ChatImpl = memo(
 
       const examplesElement = document.querySelector('#examples');
       const introElement = document.querySelector('#intro');
-      
+
       const animations = [];
-      
+
       if (examplesElement) {
         animations.push(animate('#examples', { opacity: 0, display: 'none' }, { duration: 0.1 }));
       }
-      
+
       if (introElement) {
         animations.push(animate('#intro', { opacity: 0, flex: 1 }, { duration: 0.2, ease: cubicEasingFn }));
       }
-      
+
       if (animations.length > 0) {
         await Promise.all(animations);
       }
@@ -325,10 +321,10 @@ export const ChatImpl = memo(
       const finalMessageContent = messageContent;
 
       runAnimation();
-      
+
       // Make sure the workbench is shown when a message is sent
       workbenchStore.setShowWorkbench(true);
-      
+
       // Make sure the progress compilation is visible
       streamingState.set(true);
 
@@ -590,5 +586,5 @@ export const ChatImpl = memo(
         data={chatData}
       />
     );
-  }
+  },
 );

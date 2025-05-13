@@ -7,7 +7,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const dirsToRemove = ['node_modules/.vite', 'node_modules/.cache', '.cache', 'dist'];
+const dirsToRemove = ['node_modules/.vite', 'node_modules/.cache', '.cache', 'dist', 'build'];
 
 console.log('🧹 Cleaning project...');
 

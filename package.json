@@ -12,7 +12,8 @@
   },
   "scripts": {
     "deploy": "npm run build && wrangler pages deploy",
-    "build": "remix vite:build",
+    "build": "node scripts/fix-sourcemaps.js && cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" remix vite:build",
+    "build:clean": "pnpm clean && pnpm build",
     "dev": "node pre-start.cjs  && remix vite:dev",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -159,6 +160,7 @@
     "@cloudflare/workers-types": "^4.20241127.0",
     "@electron/notarize": "^2.5.0",
     "@iconify-json/ph": "^1.2.1",
+    "@iconify-json/si": "^1.2.3",
     "@iconify/types": "^2.0.0",
     "@remix-run/dev": "^2.15.2",
     "@remix-run/serve": "^2.15.2",
